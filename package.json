@@ -1,0 +1,19 @@
+{
+  "name": "arbitrage-bot",
+  "version": "1.0.0",
+  "description": "A multi-DEX arbitrage bot using PancakeSwap and BakerySwap on BSC.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "googleapis": "^39.2.0",
+    "web3": "^1.6.1"
+  },
+  "engines": {
+    "node": "14.x"
+  }
+}
