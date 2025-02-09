@@ -77,28 +77,7 @@ function checkArbitrageOpportunity(data) {
   return arbitrageOpportunities;
 }
 
-// Send results to Bubble
-async function sendToBubble(opportunities) {
-  // Example URL for Bubble webhook
-  const bubbleWebhookUrl = 'https://your-bubble-webhook-url.com';
-
-  try {
-    const response = await fetch(bubbleWebhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ opportunities }),
-    });
-    
-    const result = await response.json();
-    console.log("✅ Successfully sent data to Bubble:", result);
-  } catch (error) {
-    console.error("❌ Failed to send data to Bubble:", error);
-  }
-}
-
-// Route to check arbitrage opportunities and send to Bubble
+// Route to check arbitrage opportunities and return results to the user
 app.post('/check-arbitrage', async (req, res) => {
   console.log("📩 Received request to check arbitrage...");
 
@@ -110,8 +89,7 @@ app.post('/check-arbitrage', async (req, res) => {
   const arbitrageOpportunities = checkArbitrageOpportunity(priceData);
   
   if (arbitrageOpportunities.length > 0) {
-    await sendToBubble(arbitrageOpportunities);
-    res.status(200).json({ message: "Arbitrage opportunities found and sent to Bubble.", opportunities: arbitrageOpportunities });
+    res.status(200).json({ message: "Arbitrage opportunities found.", opportunities: arbitrageOpportunities });
   } else {
     res.status(200).json({ message: "No arbitrage opportunities found." });
   }
