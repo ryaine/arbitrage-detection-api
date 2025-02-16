@@ -45,7 +45,7 @@ async function fetchPricesFromSheet() {
 }
 
 // Compare prices and detect arbitrage opportunities
-function checkArbitrageOpportunity(data) {
+function checkArbitrageOpportunity(data, flashLoanAmt) {
   const arbitrageOpportunities = [];
   data.forEach(row => {
     const [timestamp, tokenIn, tokenOut, pricePancake, priceBakery] = row;
@@ -54,22 +54,24 @@ function checkArbitrageOpportunity(data) {
 
     // Check for arbitrage opportunity
     if (pancakePrice > bakeryPrice) {
+      const potentialProfit = (pancakePrice - bakeryPrice) * flashLoanAmt;
       arbitrageOpportunities.push({
         tokenIn,
         tokenOut,
         pricePancake,
         priceBakery,
         arbitrage: 'PancakeSwap > BakerySwap',
-        potentialProfit: pancakePrice - bakeryPrice,
+        potentialProfit,
       });
     } else if (bakeryPrice > pancakePrice) {
+      const potentialProfit = (bakeryPrice - pancakePrice) * flashLoanAmt;
       arbitrageOpportunities.push({
         tokenIn,
         tokenOut,
         pricePancake,
         priceBakery,
         arbitrage: 'BakerySwap > PancakeSwap',
-        potentialProfit: bakeryPrice - pancakePrice,
+        potentialProfit,
       });
     }
   });
@@ -81,12 +83,18 @@ function checkArbitrageOpportunity(data) {
 app.post('/check-arbitrage', async (req, res) => {
   console.log("📩 Received request to check arbitrage...");
 
+  const { flashLoanAmt } = req.body;
+
+  if (!flashLoanAmt || isNaN(flashLoanAmt)) {
+    return res.status(400).json({ error: "Invalid or missing flashLoanAmt." });
+  }
+
   const priceData = await fetchPricesFromSheet();
   if (priceData.length === 0) {
     return res.status(500).json({ error: "No price data available." });
   }
 
-  const arbitrageOpportunities = checkArbitrageOpportunity(priceData);
+  const arbitrageOpportunities = checkArbitrageOpportunity(priceData, flashLoanAmt);
   
   if (arbitrageOpportunities.length > 0) {
     res.status(200).json({ message: "Arbitrage opportunities found.", opportunities: arbitrageOpportunities });
